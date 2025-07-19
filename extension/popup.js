@@ -1,7 +1,7 @@
-// extension/popup.js - Updated to display Domain Age
 
 document.addEventListener('DOMContentLoaded', () => {
-    const API_ENDPOINT = 'https://phishguard-api-ahuj.onrender.com/analyze'; // Replace with your live URL
+    // IMPORTANT: Make sure this is your live Render API URL
+    const API_ENDPOINT = 'https://phishguard-api-ahuj.onrender.com/analyze';
 
     const statusText = document.getElementById('status-text');
     const detailsArea = document.getElementById('details-area');
@@ -10,19 +10,22 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const currentTab = tabs[0];
 
-        if (currentTab && currentTab.url && currentTab.url.includes('warning.html')) {
+        // Case 1: We are on our own warning page
+        if (currentTab?.url?.includes('warning.html')) {
             loader.style.display = 'none';
-            statusText.textContent = 'Phishing Site Blocked';
-            statusText.className = 'status-phishing';
-            const urlParams = new URLSearchParams(new URL(currentTab.url).search);
-            const originalUrl = urlParams.get('url');
-            if (originalUrl) {
-                detailsArea.innerHTML = `<div class="detail-item"><span>Blocked Domain:</span><span>${new URL(originalUrl).hostname}</span></div>`;
-            }
+            chrome.storage.session.get('lastPhishingResult', (data) => {
+                if (data.lastPhishingResult) {
+                    updatePopup(data.lastPhishingResult);
+                } else {
+                    statusText.textContent = 'Phishing Site Blocked';
+                    statusText.className = 'status-phishing';
+                }
+            });
             return;
         }
         
-        if (currentTab && currentTab.url && currentTab.url.startsWith('http')) {
+        // Case 2: We are on a normal website
+        if (currentTab?.url?.startsWith('http')) {
             fetch(API_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -31,12 +34,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 loader.style.display = 'none';
-                updatePopup(data); // Call the updated function
+                updatePopup(data);
             })
             .catch(error => {
                 loader.style.display = 'none';
                 statusText.textContent = 'Error connecting to server.';
-                console.error("API Error:", error);
             });
         } else {
             loader.style.display = 'none';
@@ -44,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- THIS FUNCTION IS NOW UPDATED ---
+    // This is our single, unified function to update the popup's HTML
     function updatePopup(data) {
         const hostname = new URL(data.url).hostname;
         let statusMessage = 'Status Unknown';
@@ -64,12 +66,27 @@ document.addEventListener('DOMContentLoaded', () => {
         // Create a user-friendly string for the domain age
         let ageString = "Not available";
         if (data.domain_age === -1) {
-            ageString = "Unknown (new or private domain)";
+            ageString = "Unknown (new or private)";
         } else if (data.domain_age !== undefined) {
             ageString = `${data.domain_age} days old`;
         }
 
-        // Display the Domain and its Age!
+        // Build the evidence list HTML
+        let evidenceHtml = '<ul class="evidence-list">';
+        if (data.evidence?.safe_signals?.length > 0) {
+            data.evidence.safe_signals.forEach(signal => {
+                evidenceHtml += `<li class="safe">✅ ${signal}</li>`;
+            });
+        }
+        if (data.evidence?.risk_factors?.length > 0) {
+            data.evidence.risk_factors.forEach(risk => {
+                evidenceHtml += `<li class="risk">🔴 ${risk}</li>`;
+            });
+        }
+        evidenceHtml += '</ul>';
+
+        // --- THIS IS THE FIX ---
+        // Display the Domain, its Age, AND the new Evidence list
         detailsArea.innerHTML = `
             <div class="detail-item">
                 <span>Domain:</span>
@@ -79,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>Domain Age:</span>
                 <span>${ageString}</span>
             </div>
+            ${evidenceHtml}
         `;
     }
 });

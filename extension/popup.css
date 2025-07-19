@@ -77,3 +77,26 @@ h2 {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.evidence-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    text-align: left;
+}
+
+.evidence-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.9em;
+}
+
+.evidence-list li.safe {
+    color: #28a745;
+}
+
+.evidence-list li.risk {
+    color: #dc3545;
+}

@@ -1,4 +1,4 @@
-# backend/app.py - Updated to send evidence
+# backend/app.py - FINAL VERSION
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -17,18 +17,18 @@ try:
     model_columns = joblib.load('model_columns_final.pkl')
     print("✅ Final model and columns loaded successfully.")
 except FileNotFoundError:
-    print("FATAL: Final model files not found. Please run train_final_model.py first!")
+    print("🔴 FATAL: Final model files not found. Please run train_final_model.py first!")
     exit()
 
-# --- NEW: Evidence Generation Logic ---
-def generate_evidence_summary(features):
-    """ Creates a simple list of human-readable reasons based on feature values. """
+# --- Smarter Evidence Generation Logic ---
+def generate_evidence_summary(features, result):
+    """ Creates a smarter list of reasons based on feature values and the final result. """
     evidence = {
         "safe_signals": [],
         "risk_factors": []
     }
     
-    # Check for strong risk factors
+    # First, always identify the specific risk factors found.
     if features.get('DomainAge', -1) != -1 and features.get('DomainAge', 999) < 180:
         evidence['risk_factors'].append("Domain is very new")
     if features.get('InsecureForms') == 1:
@@ -39,17 +39,17 @@ def generate_evidence_summary(features):
         evidence['risk_factors'].append("Brand name used in subdomain")
     if features.get('NumSensitiveWords', 0) > 0:
         evidence['risk_factors'].append("URL contains sensitive keywords")
-        
-    # Check for strong safe signals
-    if features.get('DomainAge', -1) > 365 * 2: # Over 2 years old
-        evidence['safe_signals'].append("Domain is well-established")
-    if features.get('NoHttps') == -1:
-        evidence['safe_signals'].append("Uses a secure HTTPS connection")
-        
-    # If no specific signals found, add a general note
-    if not evidence['safe_signals'] and not evidence['risk_factors']:
-        evidence['safe_signals'].append("No major risks detected")
-        
+
+    # Now, ONLY add safe signals if the final result is "safe".
+    if result == 'safe':
+        if features.get('DomainAge', -1) > 730: # Over 2 years old
+            evidence['safe_signals'].append("Domain is well-established")
+        if features.get('NoHttps') == -1:
+            evidence['safe_signals'].append("Uses a secure HTTPS connection")
+        # If no specific safe signals are found for a safe site, add a general note.
+        if not evidence['safe_signals']:
+            evidence['safe_signals'].append("No major risks detected")
+            
     return evidence
 
 # --- API Endpoint ---
@@ -72,14 +72,14 @@ def analyze():
         result = "phishing" if prediction[0] == 1 else "safe"
         
         # 4. Generate the evidence summary
-        evidence = generate_evidence_summary(url_features)
+        evidence = generate_evidence_summary(url_features, result)
         
         # 5. Send the full response back
         return jsonify({
             "result": result,
             "url": url_to_check,
             "domain_age": url_features.get('DomainAge', -1),
-            "evidence": evidence # Add the evidence to the response
+            "evidence": evidence
         })
 
     except Exception as e:
