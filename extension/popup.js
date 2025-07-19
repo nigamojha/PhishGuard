@@ -1,7 +1,7 @@
 // extension/popup.js - Updated to display Domain Age
 
 document.addEventListener('DOMContentLoaded', () => {
-    const API_ENDPOINT = 'https://phishguard-api.onrender.com/analyze'; // Replace with your live URL
+    const API_ENDPOINT = 'https://phishguard-api-ahuj.onrender.com/analyze'; // Replace with your live URL
 
     const statusText = document.getElementById('status-text');
     const detailsArea = document.getElementById('details-area');
