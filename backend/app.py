@@ -23,29 +23,47 @@ except FileNotFoundError:
     exit()
 
 # --- API Endpoint ---
+# In backend/app.py
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    """ The main endpoint that receives a URL and returns a prediction. """
-
-    # 1. Get the URL from the incoming JSON request.
+    """ Receives a URL, extracts features, predicts, and returns the result with DomainAge. """
     try:
         data = request.get_json()
-        url_to_check = data['url']
-        if not url_to_check:
-            raise ValueError("URL cannot be empty.")
-    except (TypeError, KeyError, ValueError) as e:
-        # If the JSON is badly formatted or the 'url' key is missing.
-        return jsonify({"error": f"Invalid request: {e}"}), 400
+        if not data or 'url' not in data:
+            return jsonify({"error": "Invalid request: JSON with 'url' key is required."}), 400
 
-    # 2. Go get the features for this URL.
-    # This calls our other Python file to do the heavy lifting, including the live WHOIS lookup.
-    try:
+        url_to_check = data.get("url")
+        if not url_to_check:
+            return jsonify({"error": "URL value cannot be empty."}), 400
+
+        # 1. Extract all features, including DomainAge
         url_features = extract_features_from_url(url_to_check)
-        print(f"DEBUG: Calculated Domain Age for {url_to_check} is: {url_features.get('DomainAge', 'N/A')} days")
+        
+        # 2. Create a DataFrame for the model
+        features_df = pd.DataFrame([url_features], columns=model_columns)
+        
+        # 3. Make a prediction
+        prediction = model.predict(features_df)
+        
+        # 4. Format the response
+        result = "phishing" if prediction[0] == 1 else "safe"
+        
+        # --- THIS IS THE NEW PART ---
+        # Get the calculated Domain Age from our features dictionary
+        domain_age = url_features.get('DomainAge', -1) # Default to -1 if not found
+
+        # 5. Send the result AND the domain_age back to the extension
+        return jsonify({
+            "result": result,
+            "url": url_to_check,
+            "domain_age": domain_age # Add the age to the response
+        })
+        # ---------------------------
 
     except Exception as e:
-        print(f"🔴 Error during feature extraction for {url_to_check}: {e}")
-        return jsonify({"error": "Failed to process the URL."}), 500
+        print(f"An error occurred during analysis: {e}")
+        return jsonify({"error": "An internal error occurred during analysis."}), 500
     
 
     # 3. Predict!

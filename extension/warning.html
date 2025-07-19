@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Phishing Warning - PhishGuard</title>
+    <link rel="stylesheet" href="warning.css">
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path fill="#cf6679" d="M1 21h22L12 2 1 21z"/>
+    <path fill="#1e1e1e" d="M13 17h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+</svg>
+        </div>
+        <h1>Phishing Site Ahead</h1>
+        <p>PhishGuard blocked this page because it's suspected of being a phishing site designed to steal your information. Entering any personal details on this page is not recommended.</p>
+        <div class="url-info">
+            <span>This page is attempting to impersonate or scam users related to:</span>
+            <strong id="blocked-url"></strong>
+        </div>
+        <div class="button-group">
+            <button id="go-back-btn" class="safe-action">Go Back to Safety</button>
+            <button id="report-btn" class="neutral-action">Report Phishing</button>
+            <button id="proceed-btn" class="unsafe-action">Proceed to Site</button>
+        </div>
+    </div>
+    <script src="warning.js"></script>
+</body>
+</html>

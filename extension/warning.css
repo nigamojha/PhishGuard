@@ -1,0 +1,109 @@
+:root {
+    --bg-color: #121212;
+    --card-color: #1e1e1e;
+    --text-color: #e0e0e0;
+    --heading-color: #ffffff;
+    --danger-color: #cf6679;
+    --safe-color: #03dac6;
+    --border-color: #444;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+}
+
+.container {
+    background-color: var(--card-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    max-width: 580px;
+    width: 90%;
+    padding: 32px;
+}
+
+.icon {
+    color: var(--danger-color);
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 16px;
+}
+
+h1 {
+    color: var(--heading-color);
+    font-size: 2em;
+    font-weight: 500;
+    margin: 0 0 16px;
+}
+
+p {
+    font-size: 1.05em;
+    line-height: 1.7;
+    margin-bottom: 24px;
+}
+
+.url-info {
+    font-size: 0.9em;
+    color: #a0a0a0;
+    margin-bottom: 32px;
+}
+
+.url-info strong {
+    display: block;
+    color: var(--text-color);
+    background-color: #2a2a2a;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    word-wrap: break-word;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+button {
+    flex-grow: 1;
+    padding: 12px 16px;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+}
+
+button.safe-action {
+    background-color: var(--safe-color);
+    color: #121212;
+    border-color: var(--safe-color);
+}
+button.safe-action:hover {
+    filter: brightness(1.1);
+}
+
+button.unsafe-action {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+button.unsafe-action:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+button.neutral-action:hover {
+    border-color: var(--text-color);
+}

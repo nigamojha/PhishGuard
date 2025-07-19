@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "PhishGuard",
+  "version": "1.0",
+  "description": "A real-time phishing detection extension using Machine Learning.",
+  
+ 
+  "icons": {
+    "48": "icon.png"
+  },
+
+
+  "permissions": [
+    "tabs",
+    "notifications",
+    "tts",
+    "storage",
+    "alarms"
+  ],
+
+  "host_permissions": [
+    "https://*.onrender.com/"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_icon": {
+      "48": "icon.png"
+    },
+    "default_popup": "popup.html"
+  }
+}

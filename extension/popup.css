@@ -1,0 +1,79 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    width: 320px;
+    margin: 0;
+    background-color: #f8f9fa;
+}
+
+.container {
+    padding: 16px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.logo {
+    width: 28px;
+    height: 28px;
+}
+
+h2 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #212529;
+}
+
+.content {
+    text-align: center;
+    padding: 20px 0;
+}
+
+#status-text {
+    font-size: 1em;
+    color: #495057;
+    margin: 8px 0 0;
+}
+
+/* Status-specific styles */
+.status-safe { color: #28a745; font-weight: bold; }
+.status-phishing { color: #dc3545; font-weight: bold; }
+
+.details {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item span:first-child {
+    font-weight: 500;
+    color: #343a40;
+}
+
+/* Simple loader animation */
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
