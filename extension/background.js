@@ -1,5 +1,4 @@
-// extension/background.js - FINAL DEFINITIVE VERSION
-
+// extension/background.js - FINAL
 const API_ENDPOINT = 'https://phishguard-api-ahuj.onrender.com/analyze';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -21,12 +20,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 function handleTabUpdate(tabId, changeInfo, tab) {
     if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('http')) {
         if (tab.url.includes('warning.html')) return;
-
         chrome.storage.session.get({allowedUrls: []}, (data) => {
             if (data.allowedUrls.includes(tab.url)) {
                 return;
             }
-
             chrome.storage.sync.get({
                 isTtsEnabled: true,
                 isSafeSitePopupEnabled: true
@@ -39,16 +36,10 @@ function handleTabUpdate(tabId, changeInfo, tab) {
                 .then(response => response.json())
                 .then(apiData => {
                   const hostname = new URL(apiData.url).hostname;
-                  
                   if (apiData.result === 'phishing') {
-                    // --- THIS IS THE CRITICAL FIX ---
-                    // 1. Save the full result with evidence to session storage.
-                    chrome.storage.session.set({ lastPhishingResult: apiData }, () => {
-                        // 2. Only redirect AFTER the data has been saved.
-                        const warningPageUrl = chrome.runtime.getURL('warning.html') + `?url=${encodeURIComponent(apiData.url)}`;
-                        chrome.tabs.update(tabId, { url: warningPageUrl });
-                    });
-                    
+                    chrome.storage.session.set({ lastPhishingResult: apiData });
+                    const warningPageUrl = chrome.runtime.getURL('warning.html') + `?url=${encodeURIComponent(apiData.url)}`;
+                    chrome.tabs.update(tabId, { url: warningPageUrl });
                     if (settings.isTtsEnabled) {
                         chrome.tts.speak(`Warning: Phishing site detected. The blocked domain is ${hostname}.`, {'rate': 1.0});
                     }
@@ -57,7 +48,7 @@ function handleTabUpdate(tabId, changeInfo, tab) {
                         const notificationId = `safe-notif-${Date.now()}`;
                         chrome.notifications.create(notificationId, {
                           type: 'basic',
-                          iconUrl: 'icon-safe.png',
+                          iconUrl: 'icon.png',
                           title: 'Site is Safe',
                           message: `PhishGuard has determined ${hostname} is safe.`,
                           priority: 1
@@ -76,4 +67,4 @@ function handleTabUpdate(tabId, changeInfo, tab) {
 }
 
 chrome.tabs.onUpdated.addListener(handleTabUpdate);
-console.log("[PhishGuard] Final definitive version loaded.");
+console.log("[PhishGuard] Final version loaded. Ready to protect.");

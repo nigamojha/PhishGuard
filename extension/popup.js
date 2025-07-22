@@ -1,4 +1,5 @@
 // extension/popup.js - FINAL DEFINITIVE VERSION
+
 document.addEventListener('DOMContentLoaded', () => {
     const API_ENDPOINT = 'https://phishguard-api-ahuj.onrender.com/analyze';
 
@@ -44,17 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- MAIN ANALYSIS LOGIC ---
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const currentTab = tabs[0];
-
         if (currentTab?.url?.includes('warning.html')) {
             loader.style.display = 'none';
             chrome.storage.session.get('lastPhishingResult', (data) => {
-                if (data.lastPhishingResult) {
-                    updatePopup(data.lastPhishingResult);
-                }
+                if (data.lastPhishingResult) { updatePopup(data.lastPhishingResult); }
             });
             return;
         }
-        
         if (currentTab?.url?.startsWith('http')) {
             fetch(API_ENDPOINT, {
                 method: 'POST',
@@ -86,18 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
             ageString = `${data.domain_age} days old`;
         }
 
+        // --- THIS IS THE CORRECTED LOGIC ---
         let evidenceHtml = '<ul class="evidence-list">';
-        if (data.evidence?.safe_signals?.length > 0) {
+        if (data.evidence && data.evidence.safe_signals && data.evidence.safe_signals.length > 0) {
             data.evidence.safe_signals.forEach(item => {
                 evidenceHtml += `<li class="safe">✅ <strong>${item.signal}</strong><div class="evidence-explanation">${item.explanation}</div></li>`;
             });
         }
-        if (data.evidence?.risk_factors?.length > 0) {
+        if (data.evidence && data.evidence.risk_factors && data.evidence.risk_factors.length > 0) {
             data.evidence.risk_factors.forEach(item => {
                 evidenceHtml += `<li class="risk">🔴 <strong>${item.risk}</strong><div class="evidence-explanation">${item.explanation}</div></li>`;
             });
         }
         evidenceHtml += '</ul>';
+        // ------------------------------------
 
         detailsArea.innerHTML = `
             <div class="detail-item"><span>Domain:</span><span>${hostname}</span></div>

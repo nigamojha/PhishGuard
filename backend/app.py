@@ -1,4 +1,4 @@
-# backend/app.py - FINAL VERSION with Detailed Evidence
+# backend/app.py - FINAL DEFINITIVE VERSION
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -23,49 +23,42 @@ except FileNotFoundError:
 def generate_evidence_summary(features, result):
     evidence = {"safe_signals": [], "risk_factors": []}
     
-    # Tier 1: High-confidence risk factors
-    primary_risks = [
-        ('DomainAge', lambda x: 0 <= x < 180, "Domain is very new"),
-        ('InsecureForms', lambda x: x == 1, "Page contains insecure forms"),
-        ('IpAddress', lambda x: x == 1, "URL uses a numeric IP address"),
-        ('DomainInSubdomains', lambda x: x == 1, "Deceptive brand name in subdomain"),
-        ('NumSensitiveWords', lambda x: x > 1, "URL contains multiple sensitive keywords") # Require more than one
+    # Define risk checks as tuples: (feature_name, condition, risk_title, explanation)
+    risk_checks = [
+        ('DomainAge', lambda x: 0 <= x < 180, "Domain is New", "Phishing sites are often hosted on recently created domains."),
+        ('InsecureForms', lambda x: x == 1, "Insecure Form", "The page contains login forms that do not use a secure connection."),
+        ('IpAddress', lambda x: x == 1, "URL is IP Address", "Legitimate sites rarely use a numeric IP address in the URL."),
+        ('DomainInSubdomains', lambda x: x == 1, "Deceptive Subdomain", "The URL may be trying to impersonate a known brand in the subdomain."),
+        ('NumSensitiveWords', lambda x: x > 1, "Suspicious Keywords", "The URL contains multiple words commonly associated with phishing.")
     ]
-    for feature, condition, message in primary_risks:
+    
+    for feature, condition, title, explanation in risk_checks:
         if condition(features.get(feature, -1)):
-            evidence['risk_factors'].append(message)
+            evidence['risk_factors'].append({"risk": title, "explanation": explanation})
 
-    # Tier 2: If no primary risks are found but it's still phishing, find secondary reasons.
+    # If the final verdict is phishing but no specific risks were found, add a general one.
     if result == 'phishing' and not evidence['risk_factors']:
-        secondary_risks = [
-            ('NoHttps', lambda x: x == 1, "Connection is not secure (HTTP)"),
-            ('UrlLength', lambda x: x == 1, "URL is unusually long"), # Uses the categorized '1' for long
-            ('NumDash', lambda x: x > 3, "URL contains an excessive number of dashes"),
-            ('PathLevel', lambda x: x > 4, "URL has an unusually deep path structure")
-        ]
-        for feature, condition, message in secondary_risks:
-            if condition(features.get(feature, -1)):
-                evidence['risk_factors'].append(message)
-
-    # Fallback: If it's still phishing with no specific reasons, use the AI explanation.
-    if result == 'phishing' and not evidence['risk_factors']:
-        evidence['risk_factors'].append("Model detected a subtle pattern of suspicious features.")
+        evidence['risk_factors'].append({
+            "risk": "AI Detected Pattern",
+            "explanation": "The Model detected a subtle combination of suspicious features."
+        })
             
-    # Only add safe signals if the final result is "safe".
+    # Only add safe signals if the final result is "safe"
     if result == 'safe':
+        safe_signals = []
         if features.get('DomainAge', -1) > 730:
-            evidence['safe_signals'].append("Domain is well-established")
+            safe_signals.append({"signal": "Well-Established Domain", "explanation": "This domain was registered over two years ago."})
         if features.get('NoHttps') == -1:
-            evidence['safe_signals'].append("Uses a secure HTTPS connection")
-        if not evidence['safe_signals']:
-            evidence['safe_signals'].append("No major risks detected")
+            safe_signals.append({"signal": "Secure Connection", "explanation": "The site uses a valid HTTPS connection."})
+        if not safe_signals:
+            safe_signals.append({"signal": "No Major Risks Detected", "explanation": "Our analysis found no common phishing indicators."})
+        evidence['safe_signals'] = safe_signals
             
     return evidence
 
 # --- API Endpoint ---
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    # ... (The analyze function remains the same as the last version)
     try:
         data = request.get_json()
         url_to_check = data.get("url")
