@@ -20,30 +20,51 @@ except FileNotFoundError:
     exit()
 
 # --- Definitive Evidence Generation Logic ---
+# In backend/app.py - replace this one function
+
 def generate_evidence_summary(features, result):
+    """ Creates a smarter list of reasons with non-technical explanations. """
     evidence = {"safe_signals": [], "risk_factors": []}
     
-    # Define risk checks as tuples: (feature_name, condition, risk_title, explanation)
+    # Define risk checks with user-friendly explanations
     risk_checks = [
-        ('DomainAge', lambda x: 0 <= x < 180, "Domain is New", "Phishing sites are often hosted on recently created domains."),
-        ('InsecureForms', lambda x: x == 1, "Insecure Form", "The page contains login forms that do not use a secure connection."),
-        ('IpAddress', lambda x: x == 1, "URL is IP Address", "Legitimate sites rarely use a numeric IP address in the URL."),
-        ('DomainInSubdomains', lambda x: x == 1, "Deceptive Subdomain", "The URL may be trying to impersonate a known brand in the subdomain."),
-        ('NumSensitiveWords', lambda x: x > 1, "Suspicious Keywords", "The URL contains multiple words commonly associated with phishing.")
+        ('DomainAge', lambda x: x == -1, 
+         "Unknown Domain Age", 
+         "This website's registration details are hidden or unavailable, which is unusual for legitimate businesses."),
+         
+        ('DomainAge', lambda x: 0 <= x < 180, 
+         "Domain is Very New", 
+         "This website was created very recently. Most trustworthy sites have been online for a long time."),
+         
+        ('InsecureForms', lambda x: x == 1, 
+         "Insecure Login Form", 
+         "A form on this page is not secure. Any information you submit could be intercepted by attackers."),
+         
+        ('IpAddress', lambda x: x == 1, 
+         "URL is an IP Address", 
+         "The site is using a raw numeric address instead of a proper domain name, a common tactic for malicious sites."),
+         
+        ('DomainInSubdomains', lambda x: x == 1, 
+         "Deceptive Subdomain", 
+         "The address is designed to look like a trusted website, but it is not the real one."),
+         
+        ('NumSensitiveWords', lambda x: x > 1, 
+         "Suspicious Keywords in URL", 
+         "The address uses words like 'login' or 'account' in a suspicious way to try and appear official.")
     ]
     
     for feature, condition, title, explanation in risk_checks:
-        if condition(features.get(feature, -1)):
+        if condition(features.get(feature, 0)):
             evidence['risk_factors'].append({"risk": title, "explanation": explanation})
 
-    # If the final verdict is phishing but no specific risks were found, add a general one.
+    # Fallback if no specific primary/secondary risks were found
     if result == 'phishing' and not evidence['risk_factors']:
         evidence['risk_factors'].append({
             "risk": "AI Detected Pattern",
-            "explanation": "The Model detected a subtle combination of suspicious features."
+            "explanation": "Our AI model detected a subtle combination of features that matches patterns seen in other phishing sites."
         })
             
-    # Only add safe signals if the final result is "safe"
+    # Logic for safe signals
     if result == 'safe':
         safe_signals = []
         if features.get('DomainAge', -1) > 730:
