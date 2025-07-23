@@ -73,35 +73,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function updatePopup(data) {
-        const hostname = new URL(data.url).hostname;
-        statusText.textContent = data.result === 'safe' ? 'This site is Safe' : 'This site is Dangerous';
-        statusText.className = data.result === 'safe' ? 'status-safe' : 'status-phishing';
+    // In extension/popup.js - replace the updatePopup function
 
-        let ageString = "Unknown (new or private)";
-        if (data.domain_age > 0) {
-            ageString = `${data.domain_age} days old`;
-        }
+function updatePopup(data) {
+    const hostname = new URL(data.url).hostname;
+    statusText.textContent = data.result === 'safe' ? 'This site is Safe' : 'This site is Dangerous';
+    statusText.className = data.result === 'safe' ? 'status-safe' : 'status-phishing';
 
-        // --- THIS IS THE CORRECTED LOGIC ---
-        let evidenceHtml = '<ul class="evidence-list">';
-        if (data.evidence && data.evidence.safe_signals && data.evidence.safe_signals.length > 0) {
-            data.evidence.safe_signals.forEach(item => {
-                evidenceHtml += `<li class="safe">✅ <strong>${item.signal}</strong><div class="evidence-explanation">${item.explanation}</div></li>`;
-            });
-        }
-        if (data.evidence && data.evidence.risk_factors && data.evidence.risk_factors.length > 0) {
-            data.evidence.risk_factors.forEach(item => {
-                evidenceHtml += `<li class="risk">🔴 <strong>${item.risk}</strong><div class="evidence-explanation">${item.explanation}</div></li>`;
-            });
-        }
-        evidenceHtml += '</ul>';
-        // ------------------------------------
-
-        detailsArea.innerHTML = `
-            <div class="detail-item"><span>Domain:</span><span>${hostname}</span></div>
-            <div class="detail-item"><span>Domain Age:</span><span>${ageString}</span></div>
-            ${evidenceHtml}
-        `;
+    let ageString = "Unknown (new or private)";
+    if (data.domain_age > 0) {
+        ageString = `${data.domain_age} days old`;
     }
+
+    // This now only displays the Domain and Domain Age
+    detailsArea.innerHTML = `
+        <div class="detail-item"><span>Domain:</span><span>${hostname}</span></div>
+        <div class="detail-item"><span>Domain Age:</span><span>${ageString}</span></div>
+    `;
+}
 });

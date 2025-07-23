@@ -48,7 +48,7 @@ function handleTabUpdate(tabId, changeInfo, tab) {
                         const notificationId = `safe-notif-${Date.now()}`;
                         chrome.notifications.create(notificationId, {
                           type: 'basic',
-                          iconUrl: 'icon.png',
+                          iconUrl: 'icon-safe.png',
                           title: 'Site is Safe',
                           message: `PhishGuard has determined ${hostname} is safe.`,
                           priority: 1

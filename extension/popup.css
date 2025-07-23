@@ -63,10 +63,6 @@ h2 {
 .detail-item span:first-child { font-weight: 500; color: #343a40; }
 .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.evidence-list { list-style: none; padding: 0; margin: 12px 0 0; text-align: left; }
-.evidence-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 0.9em; }
-.evidence-list li.safe { color: #28a745; }
-.evidence-list li.risk { color: #dc3545; }
 .hidden { display: none; }
 #back-btn { background: none; border: none; padding: 4px; margin-right: 8px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 #back-btn svg { width: 24px; height: 24px; fill: #6c757d; }

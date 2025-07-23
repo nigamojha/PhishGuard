@@ -1,4 +1,4 @@
-# backend/app.py - FINAL DEFINITIVE VERSION
+# backend/app.py - Simplified Version (No Evidence)
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -19,64 +19,6 @@ except FileNotFoundError:
     print("🔴 FATAL: Final model files not found. Please run train_final_model.py first!")
     exit()
 
-# --- Definitive Evidence Generation Logic ---
-# In backend/app.py - replace this one function
-
-def generate_evidence_summary(features, result):
-    """ Creates a smarter list of reasons with non-technical explanations. """
-    evidence = {"safe_signals": [], "risk_factors": []}
-    
-    # Define risk checks with user-friendly explanations
-    risk_checks = [
-        ('DomainAge', lambda x: x == -1, 
-         "Unknown Domain Age", 
-         "This website's registration details are hidden or unavailable, which is unusual for legitimate businesses."),
-         
-        ('DomainAge', lambda x: 0 <= x < 180, 
-         "Domain is Very New", 
-         "This website was created very recently. Most trustworthy sites have been online for a long time."),
-         
-        ('InsecureForms', lambda x: x == 1, 
-         "Insecure Login Form", 
-         "A form on this page is not secure. Any information you submit could be intercepted by attackers."),
-         
-        ('IpAddress', lambda x: x == 1, 
-         "URL is an IP Address", 
-         "The site is using a raw numeric address instead of a proper domain name, a common tactic for malicious sites."),
-         
-        ('DomainInSubdomains', lambda x: x == 1, 
-         "Deceptive Subdomain", 
-         "The address is designed to look like a trusted website, but it is not the real one."),
-         
-        ('NumSensitiveWords', lambda x: x > 1, 
-         "Suspicious Keywords in URL", 
-         "The address uses words like 'login' or 'account' in a suspicious way to try and appear official.")
-    ]
-    
-    for feature, condition, title, explanation in risk_checks:
-        if condition(features.get(feature, 0)):
-            evidence['risk_factors'].append({"risk": title, "explanation": explanation})
-
-    # Fallback if no specific primary/secondary risks were found
-    if result == 'phishing' and not evidence['risk_factors']:
-        evidence['risk_factors'].append({
-            "risk": "AI Detected Pattern",
-            "explanation": "Our AI model detected a subtle combination of features that matches patterns seen in other phishing sites."
-        })
-            
-    # Logic for safe signals
-    if result == 'safe':
-        safe_signals = []
-        if features.get('DomainAge', -1) > 730:
-            safe_signals.append({"signal": "Well-Established Domain", "explanation": "This domain was registered over two years ago."})
-        if features.get('NoHttps') == -1:
-            safe_signals.append({"signal": "Secure Connection", "explanation": "The site uses a valid HTTPS connection."})
-        if not safe_signals:
-            safe_signals.append({"signal": "No Major Risks Detected", "explanation": "Our analysis found no common phishing indicators."})
-        evidence['safe_signals'] = safe_signals
-            
-    return evidence
-
 # --- API Endpoint ---
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -90,12 +32,13 @@ def analyze():
         prediction = model.predict(features_df)
         result = "phishing" if prediction[0] == 1 else "safe"
         
-        evidence = generate_evidence_summary(url_features, result)
-        
+        # The response is now simpler, without the 'evidence' key
         return jsonify({
-            "result": result, "url": url_to_check,
-            "domain_age": url_features.get('DomainAge', -1), "evidence": evidence
+            "result": result, 
+            "url": url_to_check,
+            "domain_age": url_features.get('DomainAge', -1)
         })
+
     except Exception as e:
         print(f"An error occurred during analysis: {e}")
         return jsonify({"error": "An internal error occurred during analysis."}), 500
